@@ -22,7 +22,6 @@
       flake.overlays.rustOverlay = inputs.rust-overlay.overlays.default;
       systems = [
         "x86_64-linux"
-        "x86_64-darwin"
         "aarch64-darwin"
         "aarch64-linux"
       ];
@@ -47,7 +46,7 @@
         packages = {
           ${projectName} = pkgs.rustPlatform.buildRustPackage {
             pname = projectName;
-            version = "0.1.0";
+            version = let file = builtins.fromTOML (builtins.readFile ./Cargo.toml); in file.package.version;
             src = ./.;
             cargoLock.lockFile = ./Cargo.lock;
           };
@@ -60,6 +59,7 @@
             clippy
             rust-analyzer
             cargo-nextest
+            cargo-release
           ];
         };
       };
