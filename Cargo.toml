@@ -3,13 +3,6 @@ name = "rust-template"
 version = "0.1.0"
 edition = "2024"
 
-[[bin]]
-name = "main"
-path = "main.rs"
-
-[lib]
-path = "lib.rs"
-
 [dependencies]
 
 [lints.clippy]
