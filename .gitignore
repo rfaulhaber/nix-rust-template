@@ -4,7 +4,7 @@
 tmp/
 
 .direnv
-.envrc
+.envrc.local
 target/
 result
 rust_out

@@ -15,7 +15,8 @@
     flake-parts,
     ...
   }: let
-    projectName = "CHANGEME";
+    cargoToml = builtins.fromTOML (builtins.readFile ./Cargo.toml);
+    projectName = cargoToml.package.name;
   in
     flake-parts.lib.mkFlake {inherit inputs;} {
       imports = [];
@@ -46,7 +47,7 @@
         packages = {
           ${projectName} = pkgs.rustPlatform.buildRustPackage {
             pname = projectName;
-            version = let file = builtins.fromTOML (builtins.readFile ./Cargo.toml); in file.package.version;
+            version = cargoToml.package.version;
             src = ./.;
             cargoLock.lockFile = ./Cargo.lock;
           };
@@ -55,8 +56,7 @@
 
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
-            rust-bin.stable.latest.default
-            clippy
+            (rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
             rust-analyzer
             cargo-nextest
             cargo-release
