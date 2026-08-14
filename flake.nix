@@ -8,6 +8,10 @@
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    git-hooks = {
+      url = "github:cachix/git-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
@@ -19,7 +23,7 @@
     projectName = cargoToml.package.name;
   in
     flake-parts.lib.mkFlake {inherit inputs;} {
-      imports = [];
+      imports = [inputs.git-hooks.flakeModule];
       flake.overlays.rustOverlay = inputs.rust-overlay.overlays.default;
       systems = [
         "x86_64-linux"
@@ -54,7 +58,31 @@
           default = self'.packages.${projectName};
         };
 
+        # Hooks run the same toolchain as the dev shell rather than
+        # nixpkgs' rustc, so hook results match what cargo/rust-analyzer
+        # report while developing.
+        pre-commit.settings.hooks = let
+          toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+        in {
+          clippy = {
+            enable = true;
+            packageOverrides = {
+              cargo = toolchain;
+              clippy = toolchain;
+            };
+            settings.denyWarnings = true;
+          };
+          rustfmt = {
+            enable = true;
+            packageOverrides = {
+              cargo = toolchain;
+              rustfmt = toolchain;
+            };
+          };
+        };
+
         devShells.default = pkgs.mkShell {
+          shellHook = config.pre-commit.installationScript;
           packages = with pkgs; [
             (rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
             rust-analyzer
