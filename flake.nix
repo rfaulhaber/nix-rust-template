@@ -92,6 +92,23 @@
         };
       };
 
-      flake = {};
+      # The repo root doubles as the template, so `nix flake init -t
+      # github:rfaulhaber/nix-rust-template` copies this whole project.
+      flake.templates.default = {
+        path = ./.;
+        description = "Rust project using rust-overlay, flake-parts, and git-hooks.nix";
+        welcomeText = ''
+          # Rust project initialized
+
+          Next steps:
+
+          1. Set `name` and `version` in `Cargo.toml`.
+          2. Update the `use` in `src/main.rs` to match the new crate name
+             (`-` becomes `_`, e.g. `my-project` → `my_project`).
+          3. Run `cargo generate-lockfile` and `git add` everything — flakes
+             only see git-tracked files.
+          4. `direnv allow`
+        '';
+      };
     };
 }
